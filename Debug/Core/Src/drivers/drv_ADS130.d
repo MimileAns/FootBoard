@@ -1,6 +1,6 @@
-Core/Src/Footboard_main.o: ../Core/Src/Footboard_main.c \
- ../Core/Src/drivers/drv_CAN_bus.h \
- ../Core/Src/drivers/../Footboard_main.h ../Core/Inc/main.h \
+Core/Src/drivers/drv_ADS130.o: ../Core/Src/drivers/drv_ADS130.c \
+ ../Core/Src/drivers/../drivers/drv_ADS130.h \
+ ../Core/Src/drivers/../drivers/../Footboard_main.h ../Core/Inc/main.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h \
  ../Core/Inc/stm32l4xx_hal_conf.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h \
@@ -29,10 +29,9 @@ Core/Src/Footboard_main.o: ../Core/Src/Footboard_main.c \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h \
- ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h \
- ../Core/Src/drivers/drv_ICM-42670.h ../Core/Src/drivers/drv_ADS130.h
-../Core/Src/drivers/drv_CAN_bus.h:
-../Core/Src/drivers/../Footboard_main.h:
+ ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h
+../Core/Src/drivers/../drivers/drv_ADS130.h:
+../Core/Src/drivers/../drivers/../Footboard_main.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h:
 ../Core/Inc/stm32l4xx_hal_conf.h:
@@ -63,5 +62,3 @@ Core/Src/Footboard_main.o: ../Core/Src/Footboard_main.c \
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim_ex.h:
-../Core/Src/drivers/drv_ICM-42670.h:
-../Core/Src/drivers/drv_ADS130.h:

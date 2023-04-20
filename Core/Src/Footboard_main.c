@@ -1,5 +1,6 @@
 #include "drivers/drv_CAN_bus.h"
 #include "drivers/drv_ICM-42670.h"
+#include "drivers/drv_ADS130.h"
 
 #if !TX_BOARD
 // global variable
@@ -101,6 +102,8 @@ void footboard_main(){
 	CAN_bus_Init();
 	// Initialise IMU
 	init_IMU();
+	// Initalise ADC
+	ADC_init();
 	// Start timer callback (frequency = 1kHz)
 	HAL_TIM_Base_Start_IT(&htim2);
 

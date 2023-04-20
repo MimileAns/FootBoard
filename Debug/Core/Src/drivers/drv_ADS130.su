@@ -1,0 +1,2 @@
+../Core/Src/drivers/drv_ADS130.c:22:6:ADC_init	16	static
+../Core/Src/drivers/drv_ADS130.c:39:6:Update_ADC_data	16	static

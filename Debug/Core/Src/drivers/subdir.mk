@@ -5,14 +5,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
+../Core/Src/drivers/drv_ADS130.c \
 ../Core/Src/drivers/drv_CAN_bus.c \
 ../Core/Src/drivers/drv_ICM-42670.c 
 
 OBJS += \
+./Core/Src/drivers/drv_ADS130.o \
 ./Core/Src/drivers/drv_CAN_bus.o \
 ./Core/Src/drivers/drv_ICM-42670.o 
 
 C_DEPS += \
+./Core/Src/drivers/drv_ADS130.d \
 ./Core/Src/drivers/drv_CAN_bus.d \
 ./Core/Src/drivers/drv_ICM-42670.d 
 
@@ -24,7 +27,7 @@ Core/Src/drivers/%.o Core/Src/drivers/%.su Core/Src/drivers/%.cyclo: ../Core/Src
 clean: clean-Core-2f-Src-2f-drivers
 
 clean-Core-2f-Src-2f-drivers:
-	-$(RM) ./Core/Src/drivers/drv_CAN_bus.cyclo ./Core/Src/drivers/drv_CAN_bus.d ./Core/Src/drivers/drv_CAN_bus.o ./Core/Src/drivers/drv_CAN_bus.su ./Core/Src/drivers/drv_ICM-42670.cyclo ./Core/Src/drivers/drv_ICM-42670.d ./Core/Src/drivers/drv_ICM-42670.o ./Core/Src/drivers/drv_ICM-42670.su
+	-$(RM) ./Core/Src/drivers/drv_ADS130.cyclo ./Core/Src/drivers/drv_ADS130.d ./Core/Src/drivers/drv_ADS130.o ./Core/Src/drivers/drv_ADS130.su ./Core/Src/drivers/drv_CAN_bus.cyclo ./Core/Src/drivers/drv_CAN_bus.d ./Core/Src/drivers/drv_CAN_bus.o ./Core/Src/drivers/drv_CAN_bus.su ./Core/Src/drivers/drv_ICM-42670.cyclo ./Core/Src/drivers/drv_ICM-42670.d ./Core/Src/drivers/drv_ICM-42670.o ./Core/Src/drivers/drv_ICM-42670.su
 
 .PHONY: clean-Core-2f-Src-2f-drivers
 

@@ -1,0 +1,2 @@
+drv_ADS130.c:22:6:ADC_init	1
+drv_ADS130.c:39:6:Update_ADC_data	1
