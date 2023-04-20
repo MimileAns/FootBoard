@@ -1,0 +1,2 @@
+../Core/Src/drivers/drv_CAN_bus.c:19:6:CAN_bus_Init	48	static
+../Core/Src/drivers/drv_CAN_bus.c:63:6:HAL_CAN_RxFifo0MsgPendingCallback	16	static

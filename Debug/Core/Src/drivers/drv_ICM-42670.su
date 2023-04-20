@@ -1,0 +1,6 @@
+../Core/Src/drivers/drv_ICM-42670.c:41:6:init_IMU	16	static
+../Core/Src/drivers/drv_ICM-42670.c:87:6:update_IMU_data	8	static
+../Core/Src/drivers/drv_ICM-42670.c:104:6:update_IMU_orient_data	24	static
+../Core/Src/drivers/drv_ICM-42670.c:150:7:get_IMU_orient_x	4	static
+../Core/Src/drivers/drv_ICM-42670.c:153:7:get_IMU_orient_y	4	static
+../Core/Src/drivers/drv_ICM-42670.c:156:7:get_IMU_orient_z	4	static
