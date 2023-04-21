@@ -11,7 +11,7 @@
 
 // select which filter to use for LC ADC
 #define ADC_FILTER USE_SAPMAF // if using a Self-Adapting Pseudo-Moving Average Filter
-//#define ADC_FIlTER USE_NO_FILTER // no filter
+
 
 #define USE_FILTER_COMPLEMENTARY 1
 #define USE_FILTER_KALMAN 0

@@ -1,6 +1,6 @@
 drv_ICM-42670.c:41:6:init_IMU	1
-drv_ICM-42670.c:87:6:update_IMU_data	1
-drv_ICM-42670.c:104:6:update_IMU_orient_data	1
-drv_ICM-42670.c:150:7:get_IMU_orient_x	1
-drv_ICM-42670.c:153:7:get_IMU_orient_y	1
-drv_ICM-42670.c:156:7:get_IMU_orient_z	1
+drv_ICM-42670.c:88:6:update_IMU_data	1
+drv_ICM-42670.c:105:6:update_IMU_orient_data	1
+drv_ICM-42670.c:151:7:get_IMU_orient_x	1
+drv_ICM-42670.c:154:7:get_IMU_orient_y	1
+drv_ICM-42670.c:157:7:get_IMU_orient_z	1

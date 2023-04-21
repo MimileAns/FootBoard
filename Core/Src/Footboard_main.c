@@ -100,10 +100,10 @@ void timer_callback_routine(){
 void footboard_main(){
 	// Start CAN bus
 	CAN_bus_Init();
-	// Initialise IMU
-	init_IMU();
 	// Initalise ADC
 	ADC_init();
+	// Initialise IMU
+	init_IMU();
 	// Start timer callback (frequency = 1kHz)
 	HAL_TIM_Base_Start_IT(&htim2);
 

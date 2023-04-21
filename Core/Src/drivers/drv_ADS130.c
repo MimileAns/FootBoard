@@ -88,9 +88,7 @@ void Update_LC_data(void)
 	prev_LoadCells.Middle4 = LoadCells.Middle4;
 	prev_LoadCells.Back1 = LoadCells.Back1;
 	prev_LoadCells.Back2 = LoadCells.Back2;
-
-	#endif
-
+#endif
 	//#TODO : Make conversion algorithm to get actual Load/Force on Load cells according to specific calibration
 }
 

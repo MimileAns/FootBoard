@@ -39,6 +39,7 @@ const uint8_t PWR_MGMT0 	= 0x1F | 0x00;		// GYRO_DATA_Z[7:0]
 uint8_t spi_buf[12];
 
 void init_IMU(){
+
 	// set CS to high
 	HAL_GPIO_WritePin(IMU_nCS_GPIO_Port, IMU_nCS_Pin, GPIO_PIN_SET);
 	// turn accelerometer and gyroscope ON in low-noise mode
