@@ -22,14 +22,11 @@ void ADC_init(void)
 	HAL_GPIO_WritePin(ADC_nCS_Pin, ADC_nCS_Pin, GPIO_PIN_SET);
 	// Reset the device to default settings to be sure and then set to
 	// Read data by command
-	uint8_t write_reg[1];
-	write_reg[0] = 0x11;
+	uint8_t write_reg[2];
+	write_reg[0] = 0b00010001;
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_RESET); //CS
-	HAL_SPI_Transmit(&hspi1, write_reg, 1, ADC_TIMEOUT/100);
-	write_reg[0] = 0x06;
-	HAL_SPI_Transmit(&hspi1, write_reg, 1, ADC_TIMEOUT/100);
-	write_reg[0] = 0x11,
-	HAL_SPI_Transmit(&hspi1, write_reg, 1, ADC_TIMEOUT/100);
+	HAL_SPI_Transmit(&hspi1, write_reg[0], 1, ADC_TIMEOUT/100);
+	HAL_SPI_Transmit(&hspi1,0b00001000, 1, ADC_TIMEOUT/100);
 	HAL_GPIO_WritePin(ADC_nCS_Pin, ADC_nCS_Pin, GPIO_PIN_SET);
 
 }
@@ -40,9 +37,10 @@ void Update_ADC_data(void)
 
 	//Send a Conversion Read request and store data
 	uint8_t write_reg[1];
-	write_reg[0] = 0x12;
-	HAL_SPI_Transmit(&hspi1, write_reg, 1, ADC_TIMEOUT);
-	HAL_SPI_Receive(&hspi1, (uint8_t *)ADC_buf, sizeof(ADC_buf), ADC_TIMEOUT);
+	write_reg[0] = 0b00010010;
+	//HAL_SPI_Transmit(&hspi1, write_reg, 1, ADC_TIMEOUT);
+	//HAL_SPI_Receive(&hspi1, (uint8_t *)ADC_buf, sizeof(ADC_buf), ADC_TIMEOUT);
+	HAL_SPI_TransmitReceive(&hspi1,write_reg,(uint8_t *)ADC_buf,sizeof(ADC_buf),ADC_TIMEOUT);
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET); //CS
 
 	//Check ADC channel input faults
@@ -90,6 +88,7 @@ void Update_LC_data(void)
 	prev_LoadCells.Back2 = LoadCells.Back2;
 #endif
 	//#TODO : Make conversion algorithm to get actual Load/Force on Load cells according to specific calibration
+
 }
 
 
