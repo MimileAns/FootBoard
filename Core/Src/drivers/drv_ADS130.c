@@ -2,19 +2,32 @@
 #include <math.h>
 #include <stdbool.h>
 
+// Filtering and conversion constants
+#define M 4
+const uint8_t RESOLUTION = 16; //Number of bits resolution ADC
+const float VOLTAGE = 3.3; // Upper boundary voltage Half-Bridge
+const float FORCE_CONSTANT = 0; // Force conversion constant
+static uint8_t counter = 0;
+
 // ADC RX Buffer for ADC response
 uint8_t ADC_buf[19];
 
+LC_data_RAW MVA_data[M];
 LC_data_RAW RAW_LoadCells;
-LC_data LoadCells;
-LC_data prev_LoadCells;
-
+LC_data_RAW LoadCells;
+LC_data_RAW prev_LoadCells = {0};
+LC_data Load;
 
 // Status checks
 static bool ADC_FAULT = false;
 
-// Filtering and conversion constants
-const int N = 2;
+
+
+//@brief : Initializes the ADS130E8 in read data by command mode and starts the conversions
+//@param: None
+//@return: None
+//Note: This function needs to be called before initializing the IMU, as the default setting of the ADS causes the SPI
+//bus to saturate
 
 void ADC_init(void)
 {
@@ -30,6 +43,10 @@ void ADC_init(void)
 	HAL_GPIO_WritePin(ADC_nCS_Pin, ADC_nCS_Pin, GPIO_PIN_SET);
 
 }
+
+//@brief: Updates the RAW ADC data of the LoadCells (by sending a read data request)
+//@param: None
+//@return: None
 
 void Update_ADC_data(void)
 {
@@ -50,50 +67,77 @@ void Update_ADC_data(void)
 	}
 
 	//Update RAW variables
-	RAW_LoadCells.FRONT_LOAD1_RAW = ADC_buf[3] << 8 | ADC_buf[4];
-	RAW_LoadCells.FRONT_LOAD2_RAW = ADC_buf[5] << 8 | ADC_buf[6];
-	RAW_LoadCells.MIDDLE_LOAD1_RAW = ADC_buf[7] << 8 | ADC_buf[8];
-	RAW_LoadCells.MIDDLE_LOAD2_RAW = ADC_buf[9] << 8 | ADC_buf[10];
-	RAW_LoadCells.MIDDLE_LOAD3_RAW = ADC_buf[11] << 8 | ADC_buf[12];
-	RAW_LoadCells.MIDDLE_LOAD4_RAW= ADC_buf[13] << 8 | ADC_buf[14];
-	RAW_LoadCells.BACK_LOAD1_RAW = ADC_buf[15] << 8 | ADC_buf[16];
-	RAW_LoadCells.BACK_LOAD2_RAW = ADC_buf[17] << 8 | ADC_buf[18];
+	RAW_LoadCells.Front1_RAW = ADC_buf[3] << 8 | ADC_buf[4];
+	RAW_LoadCells.Front2_RAW = ADC_buf[5] << 8 | ADC_buf[6];
+	RAW_LoadCells.Middle1_RAW = ADC_buf[7] << 8 | ADC_buf[8];
+	RAW_LoadCells.Middle2_RAW = ADC_buf[9] << 8 | ADC_buf[10];
+	RAW_LoadCells.Middle3_RAW = ADC_buf[11] << 8 | ADC_buf[12];
+	RAW_LoadCells.Middle4_RAW = ADC_buf[13] << 8 | ADC_buf[14];
+	RAW_LoadCells.Back1_RAW = ADC_buf[15] << 8 | ADC_buf[16];
+	RAW_LoadCells.Back2_RAW = ADC_buf[17] << 8 | ADC_buf[18];
 
 }
+
+//@brief: Updates and Filters the load measured on the load cells.
+//@param: None
+//@return: None
 
 void Update_LC_data(void)
 {
 	Update_ADC_data();
 
-#if ADC_FILTER == USE_SAPMAF
+#if ADC_FILTER == MOVING_AVERAGE
+
+	// Load buffer with RAW values
+	MVA_data[counter] = RAW_LoadCells;
+
+	// If counter up to MVA ratio, calculate Average LoadCell value
+	if(counter%M == 0)
+	{
+		LC_data_RAW SUM = {0};
+		for(int i = 0; i<M; i++)
+		{
+			SUM.Front1_RAW = SUM.Front1_RAW + MVA_data[i].Front1_RAW;
+			SUM.Front2_RAW = SUM.Front2_RAW + MVA_data[i].Front2_RAW;
+			SUM.Middle1_RAW = SUM.Middle1_RAW + MVA_data[i].Middle1_RAW;
+			SUM.Middle2_RAW = SUM.Middle2_RAW + MVA_data[i].Middle2_RAW;
+			SUM.Middle3_RAW = SUM.Middle3_RAW + MVA_data[i].Middle3_RAW;
+			SUM.Middle4_RAW = SUM.Middle4_RAW + MVA_data[i].Middle4_RAW;
+			SUM.Back1_RAW = SUM.Back1_RAW + MVA_data[i].Back1_RAW;
+			SUM.Back2_RAW = SUM.Back2_RAW + MVA_data[i].Back2_RAW;
+		}
+
+		LoadCells.Front1_RAW = SUM.Front1_RAW/M;
+		LoadCells.Front2_RAW = SUM.Front2_RAW/M;
+		LoadCells.Middle1_RAW = SUM.Middle1_RAW/M;
+		LoadCells.Middle2_RAW = SUM.Middle2_RAW/M;
+		LoadCells.Middle3_RAW = SUM.Middle3_RAW/M;
+		LoadCells.Middle4_RAW = SUM.Middle4_RAW/M;
+		LoadCells.Back1_RAW = SUM.Back1_RAW/M;
+		LoadCells.Back2_RAW = SUM.Back2_RAW/M;
+		counter = 0;
+	}
+
+#elif ADC_FILTER == USE_LPF
 
 	//Calculate value from previous sample and conversion result
-	LoadCells.Front1 =	prev_LoadCells.Front1 + (RAW_LoadCells.FRONT_LOAD1_RAW - prev_LoadCells.Front1)/N;
-	LoadCells.Front2 =	prev_LoadCells.Front2 + (RAW_LoadCells.FRONT_LOAD2_RAW - prev_LoadCells.Front2)/N;
-	LoadCells.Middle1 =	prev_LoadCells.Middle1 + (RAW_LoadCells.MIDDLE_LOAD1_RAW - prev_LoadCells.Middle1)/N;
-	LoadCells.Middle2 =	prev_LoadCells.Middle2 + (RAW_LoadCells.MIDDLE_LOAD2_RAW - prev_LoadCells.Middle2)/N;
-	LoadCells.Middle3 =	prev_LoadCells.Middle3 + (RAW_LoadCells.MIDDLE_LOAD3_RAW - prev_LoadCells.Middle3)/N;
-	LoadCells.Middle4 =	prev_LoadCells.Middle4 + (RAW_LoadCells.MIDDLE_LOAD4_RAW - prev_LoadCells.Middle4)/N;
-	LoadCells.Back1 =	prev_LoadCells.Back1 + (RAW_LoadCells.BACK_LOAD1_RAW - prev_LoadCells.Back1)/N;
-	LoadCells.Back2 =	prev_LoadCells.Back2 + (RAW_LoadCells.BACK_LOAD2_RAW - prev_LoadCells.Back2)/N;
+	LoadCells =	RAW_LoadCells - prev_LoadCells;
 
 	// update previous readings
-	prev_LoadCells.Front1 =	LoadCells.Front1;
-	prev_LoadCells.Front2 =	LoadCells.Front2;
-	prev_LoadCells.Middle1 = LoadCells.Middle1;
-	prev_LoadCells.Middle2 = LoadCells.Middle2;
-	prev_LoadCells.Middle3 = LoadCells.Middle3;
-	prev_LoadCells.Middle4 = LoadCells.Middle4;
-	prev_LoadCells.Back1 = LoadCells.Back1;
-	prev_LoadCells.Back2 = LoadCells.Back2;
+	prev_LoadCells.Front1 =	LoadCells;
+
 #endif
 	//#TODO : Make conversion algorithm to get actual Load/Force on Load cells according to specific calibration
+counter++;
 
 }
 
+//@brief: Updates and sends back the converted values of the Load Cells
+//@param: None
+//@return: LC_data structure
 
 LC_data Get_LC_data(void)
 {
 	Update_LC_data();
-	return LoadCells;
+	return Load;
 }

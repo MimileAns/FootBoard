@@ -20,14 +20,14 @@
 
 typedef struct{
 
-	uint16_t	FRONT_LOAD1_RAW,
-				FRONT_LOAD2_RAW,
-				MIDDLE_LOAD1_RAW,
-				MIDDLE_LOAD2_RAW,
-				MIDDLE_LOAD3_RAW,
-				MIDDLE_LOAD4_RAW,
-				BACK_LOAD1_RAW,
-				BACK_LOAD2_RAW;
+	uint16_t	Front1_RAW,
+				Front2_RAW,
+				Middle1_RAW,
+				Middle2_RAW,
+				Middle3_RAW,
+				Middle4_RAW,
+				Back1_RAW,
+				Back2_RAW;
 
 }LC_data_RAW;
 
