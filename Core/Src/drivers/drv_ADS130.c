@@ -1,22 +1,20 @@
-#include "../drivers/drv_ADS130.h"
+#include "drv_ADS130.h"
 #include <math.h>
 #include <stdbool.h>
 
 // Filtering and conversion constants
-#define M 4
-const uint8_t RESOLUTION = 16; //Number of bits resolution ADC
-const float VOLTAGE = 3.3; // Upper boundary voltage Half-Bridge
-const float FORCE_CONSTANT = 0; // Force conversion constant
+const float FS = 3.3; // Upper boundary voltage Half-Bridge
+const float FORCE_CST = 9.81; // Force conversion constant
 static uint8_t counter = 0;
 
 // ADC RX Buffer for ADC response
 uint8_t ADC_buf[19];
 
-LC_data_RAW MVA_data[M];
-LC_data_RAW RAW_LoadCells;
-LC_data_RAW LoadCells;
-LC_data_RAW prev_LoadCells = {0};
-LC_data Load;
+static LC_data_RAW16 MVA_data[M];
+static LC_data_RAW16 RAW_LoadCells;
+static LC_data_RAW16 LoadCells;
+static LC_data_RAW32 prev_LoadCells = {0};
+static LC_data Load;
 
 // Status checks
 static bool ADC_FAULT = false;
@@ -55,8 +53,6 @@ void Update_ADC_data(void)
 	//Send a Conversion Read request and store data
 	uint8_t write_reg[1];
 	write_reg[0] = 0b00010010;
-	//HAL_SPI_Transmit(&hspi1, write_reg, 1, ADC_TIMEOUT);
-	//HAL_SPI_Receive(&hspi1, (uint8_t *)ADC_buf, sizeof(ADC_buf), ADC_TIMEOUT);
 	HAL_SPI_TransmitReceive(&hspi1,write_reg,(uint8_t *)ADC_buf,sizeof(ADC_buf),ADC_TIMEOUT);
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET); //CS
 
@@ -75,7 +71,6 @@ void Update_ADC_data(void)
 	RAW_LoadCells.Middle4_RAW = ADC_buf[13] << 8 | ADC_buf[14];
 	RAW_LoadCells.Back1_RAW = ADC_buf[15] << 8 | ADC_buf[16];
 	RAW_LoadCells.Back2_RAW = ADC_buf[17] << 8 | ADC_buf[18];
-
 }
 
 //@brief: Updates and Filters the load measured on the load cells.
@@ -92,9 +87,9 @@ void Update_LC_data(void)
 	MVA_data[counter] = RAW_LoadCells;
 
 	// If counter up to MVA ratio, calculate Average LoadCell value
-	if(counter%M == 0)
+	if(counter%M == 0 && counter !=0)
 	{
-		LC_data_RAW SUM = {0};
+		LC_data_RAW32 SUM = {0};
 		for(int i = 0; i<M; i++)
 		{
 			SUM.Front1_RAW = SUM.Front1_RAW + MVA_data[i].Front1_RAW;
@@ -116,6 +111,7 @@ void Update_LC_data(void)
 		LoadCells.Back1_RAW = SUM.Back1_RAW/M;
 		LoadCells.Back2_RAW = SUM.Back2_RAW/M;
 		counter = 0;
+		return;
 	}
 
 #elif ADC_FILTER == USE_LPF
@@ -127,17 +123,48 @@ void Update_LC_data(void)
 	prev_LoadCells.Front1 =	LoadCells;
 
 #endif
-	//#TODO : Make conversion algorithm to get actual Load/Force on Load cells according to specific calibration
+
 counter++;
 
 }
 
 //@brief: Updates and sends back the converted values of the Load Cells
 //@param: None
-//@return: LC_data structure
+//@return: None
 
-LC_data Get_LC_data(void)
+void Get_LC_data(void)
 {
 	Update_LC_data();
-	return Load;
+	//#TODO : Make conversion algorithm to get actual Load/Force on Load cells according to specific calibration
+
+#if CONV == KG
+	//Convert Digital measurements to Load metrics in [kg]
+	Load.Front1 = LoadCells.Front1_RAW * (MAX_LOAD/2^RES);
+	Load.Front2 = LoadCells.Front2_RAW * (MAX_LOAD/2^RES);
+	Load.Middle1 = LoadCells.Middle1_RAW * (MAX_LOAD/2^RES);
+	Load.Middle2 = LoadCells.Middle2_RAW * (MAX_LOAD/2^RES);
+	Load.Middle3 = LoadCells.Middle3_RAW * (MAX_LOAD/2^RES);
+	Load.Middle4 = LoadCells.Middle4_RAW * (MAX_LOAD/2^RES);
+	Load.Back1 = LoadCells.Back1_RAW * (MAX_LOAD/2^RES);
+	Load.Back2 = LoadCells.Back2_RAW * (MAX_LOAD/2^RES);
+#elif CONV == NEWT
+	//Convert Digital measurements to Load metrics in [kg]
+	Load.Front1 = LoadCells.Front1_RAW * (MAX_LOAD/2^RES);
+	Load.Front2 = LoadCells.Front2_RAW * (MAX_LOAD/2^RES);
+	Load.Middle1 = LoadCells.Middle1_RAW * (MAX_LOAD/2^RES);
+	Load.Middle2 = LoadCells.Middle2_RAW * (MAX_LAOD/2^RES);
+	Load.Middle3 = LoadCells.Middle3_RAW * (MAX_LAOD/2^RES);
+	Load.Middle4 = LoadCells.Middle4_RAW * (MAX_LAOD/2^RES);
+	Load.Back1 = LoadCells.Back1_RAW * (MAX_LAOD/2^RES);
+	Load.Back2 = LoadCells.Back2_RAW * (MAX_LAOD/2^RES);
+
+	Load.Front1 = Load.Front1 * FORCE_CST;
+	Load.Front2 = Load.Front2 * FORCE_CST;
+	Load.Middle1 = Load.Middle1 * FORCE_CST;
+	Load.Middle2 = Load.Middle2 * FORCE_CST;
+	Load.Middle3 = Load.Middle3 * FORCE_CST;
+	Load.Middle4 = Load.Middle4 * FORCE_CST;
+	Load.Back1 = Load.Back1 * FORCE_CST;
+	Load.Back2 = Load.Back2 * FORCE_CST;
+#endif
 }

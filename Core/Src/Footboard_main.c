@@ -12,8 +12,11 @@ float received_angle_203 = 0;
 // callback @ 1kHz
 void timer_callback_routine(){
 	HAL_GPIO_WritePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin, GPIO_PIN_SET);
+
+	//Update_ADC_data needs to be called first to update LoadCell values
 	Update_ADC_data();
-	//Update_LC_data();
+	Update_LC_data();
+
 #if WITH_IMU
 	// get IMU
 	//update_IMU_data();
