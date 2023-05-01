@@ -71,6 +71,8 @@ void Update_ADC_data(void)
 	RAW_LoadCells.Middle4_RAW = ADC_buf[13] << 8 | ADC_buf[14];
 	RAW_LoadCells.Back1_RAW = ADC_buf[15] << 8 | ADC_buf[16];
 	RAW_LoadCells.Back2_RAW = ADC_buf[17] << 8 | ADC_buf[18];
+
+	memset(ADC_buf, 0, sizeof(ADC_buf));
 }
 
 //@brief: Updates and Filters the load measured on the load cells.
@@ -122,10 +124,11 @@ void Update_LC_data(void)
 	// update previous readings
 	prev_LoadCells.Front1 =	LoadCells;
 
+#else
+	LoadCells = RAW_LoadCells;
 #endif
 
 counter++;
-
 }
 
 //@brief: Updates and sends back the converted values of the Load Cells
@@ -134,30 +137,20 @@ counter++;
 
 void Get_LC_data(void)
 {
+	//Update_ADC_data();
 	Update_LC_data();
-	//#TODO : Make conversion algorithm to get actual Load/Force on Load cells according to specific calibration
 
-#if CONV == KG
 	//Convert Digital measurements to Load metrics in [kg]
-	Load.Front1 = LoadCells.Front1_RAW * (MAX_LOAD/2^RES);
-	Load.Front2 = LoadCells.Front2_RAW * (MAX_LOAD/2^RES);
-	Load.Middle1 = LoadCells.Middle1_RAW * (MAX_LOAD/2^RES);
-	Load.Middle2 = LoadCells.Middle2_RAW * (MAX_LOAD/2^RES);
-	Load.Middle3 = LoadCells.Middle3_RAW * (MAX_LOAD/2^RES);
-	Load.Middle4 = LoadCells.Middle4_RAW * (MAX_LOAD/2^RES);
-	Load.Back1 = LoadCells.Back1_RAW * (MAX_LOAD/2^RES);
-	Load.Back2 = LoadCells.Back2_RAW * (MAX_LOAD/2^RES);
-#elif CONV == NEWT
-	//Convert Digital measurements to Load metrics in [kg]
-	Load.Front1 = LoadCells.Front1_RAW * (MAX_LOAD/2^RES);
-	Load.Front2 = LoadCells.Front2_RAW * (MAX_LOAD/2^RES);
-	Load.Middle1 = LoadCells.Middle1_RAW * (MAX_LOAD/2^RES);
-	Load.Middle2 = LoadCells.Middle2_RAW * (MAX_LAOD/2^RES);
-	Load.Middle3 = LoadCells.Middle3_RAW * (MAX_LAOD/2^RES);
-	Load.Middle4 = LoadCells.Middle4_RAW * (MAX_LAOD/2^RES);
-	Load.Back1 = LoadCells.Back1_RAW * (MAX_LAOD/2^RES);
-	Load.Back2 = LoadCells.Back2_RAW * (MAX_LAOD/2^RES);
+	Load.Front1 = (float)LoadCells.Front1_RAW * (MAX_LOAD/pow(2,RES));
+	Load.Front2 = (float)LoadCells.Front2_RAW * (MAX_LOAD/pow(2,RES));
+	Load.Middle1 = (float)LoadCells.Middle1_RAW * (MAX_LOAD/pow(2,RES));
+	Load.Middle2 = (float)LoadCells.Middle2_RAW * (MAX_LOAD/pow(2,RES));
+	Load.Middle3 = (float)LoadCells.Middle3_RAW * (MAX_LOAD/pow(2,RES));
+	Load.Middle4 = (float)LoadCells.Middle4_RAW * (MAX_LOAD/pow(2,RES));
+	Load.Back1 = (float)LoadCells.Back1_RAW * (MAX_LOAD/pow(2,RES));
+	Load.Back2 = (float)LoadCells.Back2_RAW * (MAX_LOAD/pow(2,RES));
 
+#if CONV == NEWT
 	Load.Front1 = Load.Front1 * FORCE_CST;
 	Load.Front2 = Load.Front2 * FORCE_CST;
 	Load.Middle1 = Load.Middle1 * FORCE_CST;

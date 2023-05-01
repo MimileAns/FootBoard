@@ -10,8 +10,8 @@
 //#define ORIENTATION_FILTER ORIENTATION_FILTER
 
 // select which filter to use for LC ADC
-#define ADC_FILTER MOVING_AVERAGE //  if using a MVA filter
-//#define ADC_FILTER USE_LPF // if using a LPF filter
+//#define ADC_FILTER MOVING_AVERAGE //  if using a MVA filter
+#define ADC_FILTER USE_LPF // if using a LPF filter
 
 
 

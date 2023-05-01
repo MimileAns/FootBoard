@@ -5,8 +5,7 @@
 #include "../Footboard_main.h"
 
 #define ADC_TIMEOUT 1000
-#define CONV KG
-//#define CONV NEWT
+#define CONV NEWT
 
 #define FRONT_CELL1		1
 #define FRONT_CELL2		2
