@@ -44,37 +44,37 @@ void ADC_init(void)
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET);
 	// Set up read data by command
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_RESET); //CS
+	utils_DelayUs(2);
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&nRESET, 1, ADC_TIMEOUT/100); //reset device
-	HAL_Delay(1000);
+	HAL_Delay(1000); // Wait for device to stabalize
 
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&SDATAC, 1, ADC_TIMEOUT/100); //stop read data continuously
-	HAL_Delay(10);
+	HAL_Delay(20);
 
-	/*write_reg[0] = CR1; // Config Reg 1
-	write_reg[1] = 0x01; // Write in one register
+	write_reg[0] = CR1; // Config Reg 1
+	write_reg[1] = 0x00; // Write in one register
 	write_reg[2] = 0x01; // CLK_EN 0
 	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
 	HAL_Delay(10);
 
-	write_reg[0] = CR3; // Config Reg 3
-	write_reg[1] = 0x01; // Write in one register
-	write_reg[2] = 0x40; // Default config
+	/*write_reg[0] = CR3; // Config Reg 3
+	write_reg[1] = 0x00; // Write in one register
+	write_reg[2] = 0x4C; // Default config
 	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
-	HAL_Delay(10);
+	HAL_Delay(10);*/
 
-	write_reg[0] = CHn; // Config Reg 3
-	write_reg[1] = 0x08; // Write in eight registers
-	write_reg[2] = 0x10; // Set all channels in normal operation with x1 gain
-	write_reg[3] = 0x10; // Set all channels in normal operation with x1 gain
-	write_reg[4] = 0x10; // Set all channels in normal operation with x1 gain
-	write_reg[5] = 0x10; // Set all channels in normal operation with x1 gain
-	write_reg[6] = 0x10; // Set all channels in normal operation with x1 gain
-	write_reg[7] = 0x10; // Set all channels in normal operation with x1 gain
-	write_reg[8] = 0x10; // Set all channels in normal operation with x1 gain
-	write_reg[9] = 0x10; // Set all channels in normal operation with x1 gain
+	/*write_reg[0] = CHn; // ADC channel
+	write_reg[1] = 0x07; // Write in eight registers (8 -1)
+	write_reg[2] = 0x20; // Set all channels in normal operation with x2 gain
+	write_reg[3] = 0x20;
+	write_reg[4] = 0x20;
+	write_reg[5] = 0x20;
+	write_reg[6] = 0x20;
+	write_reg[7] = 0x20;
+	write_reg[8] = 0x20;
+	write_reg[9] = 0x20;
 	HAL_SPI_Transmit(&hspi1,write_reg, 10, ADC_TIMEOUT/100);
-	HAL_Delay(100);
-	*/
+	HAL_Delay(100);*/
 
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&START, 1, ADC_TIMEOUT/100); // Start conversions
 	HAL_Delay(10);
@@ -121,7 +121,7 @@ void ADC_init(void)
 void Update_ADC_data(void)
 {
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_RESET); //CS
-
+	//utils_DelayUs(1);
 	//Send a Conversion Read request and store data
 	HAL_SPI_TransmitReceive(&hspi1,(uint8_t *)&GET_DATA, ADC_buf,20,ADC_TIMEOUT);
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET); //CS
@@ -197,7 +197,7 @@ void Update_LC_data(void)
 	LoadCells.Middle2 = RAW_LoadCells.Middle2_RAW;
 	LoadCells.Middle3 = RAW_LoadCells.Middle3_RAW;
 	LoadCells.Middle4 = RAW_LoadCells.Middle4_RAW;
-	LoadCells.Back1= RAW_LoadCells.Back1_RAW;
+	LoadCells.Back1 = RAW_LoadCells.Back1_RAW;
 	LoadCells.Back2 = RAW_LoadCells.Back2_RAW;
 
 #endif

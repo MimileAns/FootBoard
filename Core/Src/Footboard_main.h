@@ -2,6 +2,7 @@
 #define SRC_FOOTBOARD_MAIN_H_
 
 #include "main.h"
+#include "lib/utils.h"
 
 #define CALL_BACK_DT 0.001f // callback period in [s]
 

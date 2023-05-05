@@ -1,0 +1,17 @@
+../Core/Src/lib/utils.c:9:6:utils_TrapCpu	4	static
+../Core/Src/lib/utils.c:25:6:utils_DelayUs	24	static,ignoring_inline_asm
+../Core/Src/lib/utils.c:51:6:utils_DelayMs	24	static
+../Core/Src/lib/utils.c:66:6:utils_SaturateF	24	static
+../Core/Src/lib/utils.c:80:6:utils_SaturateU16	16	static
+../Core/Src/lib/utils.c:94:6:utils_SaturateI32	24	static
+../Core/Src/lib/utils.c:108:6:utils_SaturateU32	24	static
+../Core/Src/lib/utils.c:123:7:utils_SaturatedF	24	static
+../Core/Src/lib/utils.c:140:10:utils_SaturatedU16	16	static
+../Core/Src/lib/utils.c:157:9:utils_SaturatedI32	24	static
+../Core/Src/lib/utils.c:174:10:utils_SaturatedU32	24	static
+../Core/Src/lib/utils.c:190:7:utils_Mean	24	static
+../Core/Src/lib/utils.c:207:7:utils_GreatestAbsoluteValue	16	static
+../Core/Src/lib/utils.c:222:7:utils_ConstrainPeriodicF	24	static
+../Core/Src/lib/utils.c:240:5:utils_ConstrainPeriodicI	24	static
+../Core/Src/lib/utils.c:257:9:utils_Modulo	16	static
+../Core/Src/lib/utils.c:273:7:utils_ReadLut	32	static

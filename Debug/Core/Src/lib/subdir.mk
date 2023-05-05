@@ -5,13 +5,16 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Core/Src/lib/lib_kalman.c 
+../Core/Src/lib/lib_kalman.c \
+../Core/Src/lib/utils.c 
 
 OBJS += \
-./Core/Src/lib/lib_kalman.o 
+./Core/Src/lib/lib_kalman.o \
+./Core/Src/lib/utils.o 
 
 C_DEPS += \
-./Core/Src/lib/lib_kalman.d 
+./Core/Src/lib/lib_kalman.d \
+./Core/Src/lib/utils.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -21,7 +24,7 @@ Core/Src/lib/%.o Core/Src/lib/%.su Core/Src/lib/%.cyclo: ../Core/Src/lib/%.c Cor
 clean: clean-Core-2f-Src-2f-lib
 
 clean-Core-2f-Src-2f-lib:
-	-$(RM) ./Core/Src/lib/lib_kalman.cyclo ./Core/Src/lib/lib_kalman.d ./Core/Src/lib/lib_kalman.o ./Core/Src/lib/lib_kalman.su
+	-$(RM) ./Core/Src/lib/lib_kalman.cyclo ./Core/Src/lib/lib_kalman.d ./Core/Src/lib/lib_kalman.o ./Core/Src/lib/lib_kalman.su ./Core/Src/lib/utils.cyclo ./Core/Src/lib/utils.d ./Core/Src/lib/utils.o ./Core/Src/lib/utils.su
 
 .PHONY: clean-Core-2f-Src-2f-lib
 
