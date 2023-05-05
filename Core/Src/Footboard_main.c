@@ -1,6 +1,7 @@
 #include "drivers/drv_CAN_bus.h"
 #include "drivers/drv_ICM-42670.h"
 #include "drivers/drv_ADS130.h"
+#include "Footboard_main.h"
 
 #if !TX_BOARD
 // global variable
@@ -9,14 +10,20 @@ float received_angle_203 = 0;
 #endif
 
 
+uint32_t tick=0;
+uint32_t tick2 = 0;
+uint32_t time=0;
+
 // callback @ 1kHz
 void timer_callback_routine(){
+
+	//tick = TIM2->CNT;
 	HAL_GPIO_WritePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin, GPIO_PIN_SET);
 
 	//Update_ADC_data needs to be called first to update LoadCell values
-	//Update_ADC_data();
+	Update_ADC_data();
 	//Update_LC_data();
-	Get_LC_data();
+	//LC_data LC = Get_LC_data();
 
 #if WITH_IMU
 	// get IMU
@@ -100,6 +107,8 @@ void timer_callback_routine(){
 
 #endif
 	HAL_GPIO_WritePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin, GPIO_PIN_RESET);
+	//tick2=TIM2->CNT;
+	//time = abs(tick2-tick)/80;
 }
 
 void footboard_main(){
@@ -117,5 +126,6 @@ void footboard_main(){
 
 // Timer interrupt callback
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
+
 	timer_callback_routine();
 }
