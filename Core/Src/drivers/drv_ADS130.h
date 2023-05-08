@@ -52,7 +52,7 @@ typedef struct{
 }LC_data;
 
 #define CELLCOUNT 1		 // If 8 LOAD CELLS : set to 1
-#define M 5				 // MVA const
+#define M 500				 // MVA const
 #define MAX_LOAD 50 	 // Maximal load on cells [kg]
 #define RES 16 			 // Number of bits resolution ADC
 

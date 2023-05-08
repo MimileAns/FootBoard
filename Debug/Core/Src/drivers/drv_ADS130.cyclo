@@ -1,4 +1,4 @@
-drv_ADS130.c:39:6:ADC_init	1
-drv_ADS130.c:121:6:Update_ADC_data	4
-drv_ADS130.c:155:6:Update_LC_data	1
-drv_ADS130.c:211:9:Get_LC_data	1
+drv_ADS130.c:40:6:ADC_init	2
+drv_ADS130.c:115:6:Update_ADC_data	4
+drv_ADS130.c:150:6:Update_LC_data	1
+drv_ADS130.c:206:9:Get_LC_data	1

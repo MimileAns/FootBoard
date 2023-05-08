@@ -13,6 +13,7 @@ uint8_t ADC_buf[19];
 const uint8_t nRESET = 0x06;
 const uint8_t SDATAC = 0x11;
 const uint8_t START = 0x08;
+const uint8_t STOP = 0x0A;
 const uint8_t GET_DATA = 0x12;
 const uint8_t CR1 = 0x41;
 const uint8_t CR2 = 0x42;
@@ -64,21 +65,14 @@ void ADC_init(void)
 	HAL_Delay(10);*/
 
 	/*write_reg[0] = CHn; // ADC channel
-	write_reg[1] = 0x07; // Write in eight registers (8 -1)
-	write_reg[2] = 0x20; // Set all channels in normal operation with x2 gain
-	write_reg[3] = 0x20;
-	write_reg[4] = 0x20;
-	write_reg[5] = 0x20;
-	write_reg[6] = 0x20;
-	write_reg[7] = 0x20;
-	write_reg[8] = 0x20;
-	write_reg[9] = 0x20;
-	HAL_SPI_Transmit(&hspi1,write_reg, 10, ADC_TIMEOUT/100);
+	write_reg[1] = 0x00; // Write in eight registers (8 -1)
+	write_reg[2] = 0x10; // Set all channels in normal operation with x1 gain
+	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
 	HAL_Delay(100);*/
 
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&START, 1, ADC_TIMEOUT/100); // Start conversions
 	HAL_Delay(10);
-	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET); // CS High
 	HAL_Delay(100);
 
 
@@ -121,17 +115,17 @@ void ADC_init(void)
 void Update_ADC_data(void)
 {
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_RESET); //CS
-	//utils_DelayUs(1);
+
 	//Send a Conversion Read request and store data
 	HAL_SPI_TransmitReceive(&hspi1,(uint8_t *)&GET_DATA, ADC_buf,20,ADC_TIMEOUT);
-	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET); //CS
+	//HAL_SPI_Receive(&hspi1, ADC_buf,19,ADC_TIMEOUT);
 
+	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET); //CS
 	//Check ADC channel input faults
 	if(ADC_buf[0] != 0xC0 || ADC_buf[1] != 0x00 || ADC_buf[2] != 0x00 )
 	{
 		ADC_FAULT = true;
 	}
-
 	//Update RAW variables
 	RAW_LoadCells.Front1_RAW = (ADC_buf[3] << 8 | ADC_buf[4]);
 	RAW_LoadCells.Front2_RAW = (ADC_buf[5] << 8 | ADC_buf[6]);
@@ -141,6 +135,7 @@ void Update_ADC_data(void)
 	RAW_LoadCells.Middle4_RAW = (ADC_buf[13] << 8 | ADC_buf[14]);
 	RAW_LoadCells.Back1_RAW = (ADC_buf[15] << 8 | ADC_buf[16]);
 	RAW_LoadCells.Back2_RAW = (ADC_buf[17] << 8 | ADC_buf[18]);
+
 
 	//memset(ADC_buf,0,sizeof(ADC_buf));
 
@@ -155,7 +150,7 @@ void Update_ADC_data(void)
 void Update_LC_data(void)
 {
 
-	//Update_ADC_data();
+	Update_ADC_data();
 
 #if ADC_FILTER == MOVING_AVERAGE
 
