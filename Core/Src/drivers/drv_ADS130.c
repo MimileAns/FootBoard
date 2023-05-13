@@ -10,6 +10,7 @@ const float bet = 1 - alph;
 
 // ADC buffer and addresses for SPI
 uint8_t ADC_buf[19];
+
 const uint8_t nRESET = 0x06;
 const uint8_t SDATAC = 0x11;
 const uint8_t START = 0x08;
@@ -19,6 +20,11 @@ const uint8_t CR1 = 0x41;
 const uint8_t CR2 = 0x42;
 const uint8_t CR3 = 0x43;
 const uint8_t CHn = 0x45;
+const uint8_t CR1_read = 0x21;
+const uint8_t CR2_read = 0x22;
+const uint8_t CR3_read = 0x23;
+const uint8_t CHn_read = 0x25;
+
 
 //Data structures
 LC_data_RAW16 RAW_LoadCells;
@@ -39,8 +45,9 @@ static bool ADC_FAULT = false;
 
 void ADC_init(void)
 {
-	uint8_t write_reg[10];
-	HAL_Delay(1000);
+	uint8_t write_reg[3] = {0};
+	uint8_t txbuffer[10] = {0};
+	HAL_Delay(10000);
 	// set CS high to avoid conflicts
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET);
 	// Set up read data by command
@@ -49,37 +56,85 @@ void ADC_init(void)
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&nRESET, 1, ADC_TIMEOUT/100); //reset device
 	HAL_Delay(1000); // Wait for device to stabalize
 
+	HAL_SPI_Transmit(&hspi1,(uint8_t *)&STOP, 1, ADC_TIMEOUT/100);
+	HAL_Delay(20);
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&SDATAC, 1, ADC_TIMEOUT/100); //stop read data continuously
 	HAL_Delay(20);
 
-	write_reg[0] = CR1; // Config Reg 1
-	write_reg[1] = 0x00; // Write in one register
-	write_reg[2] = 0x01; // CLK_EN 0
+ // Configure CR1
+	write_reg[0] = CR1;
+	write_reg[1] = 0x00;
+	write_reg[2] = 0x21;
 	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
-	HAL_Delay(10);
+	HAL_Delay(50);
 
-	/*write_reg[0] = CR3; // Config Reg 3
-	write_reg[1] = 0x00; // Write in one register
-	write_reg[2] = 0x4C; // Default config
+	write_reg[0] = CR1_read;
+	write_reg[1] = 0x00;
+	HAL_SPI_Transmit(&hspi1,write_reg, 2, ADC_TIMEOUT/100);
+	HAL_SPI_Receive(&hspi1, ADC_buf, 1,ADC_TIMEOUT);
+	HAL_Delay(50);
+
+
+// Configure CR2
+	write_reg[0] = CR2;
+	write_reg[1] = 0x00;
+	write_reg[2] = 0x74;
 	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
-	HAL_Delay(10);*/
+	HAL_Delay(50);
 
-	/*write_reg[0] = CHn; // ADC channel
-	write_reg[1] = 0x00; // Write in eight registers (8 -1)
-	write_reg[2] = 0x10; // Set all channels in normal operation with x1 gain
+	write_reg[0] = CR2_read;
+	write_reg[1] = 0x00;
+	HAL_SPI_Transmit(&hspi1,write_reg,2, ADC_TIMEOUT/100);
+	HAL_SPI_Receive(&hspi1,ADC_buf,1,ADC_TIMEOUT);
+	HAL_Delay(50);
+
+//Configure CR3
+	write_reg[0] = CR3;
+	write_reg[1] = 0x00;
+	write_reg[2] = 0x4C;
 	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
-	HAL_Delay(100);*/
+	HAL_Delay(50);
 
+	write_reg[0] = CR3_read;
+	write_reg[1] = 0x00;
+	HAL_SPI_Transmit(&hspi1,write_reg,2, ADC_TIMEOUT/100);
+	HAL_SPI_Receive(&hspi1,ADC_buf,1,ADC_TIMEOUT);
+	HAL_Delay(50);
+
+//Configure CHn
+
+//	write_reg[0] = CHn;
+//	write_reg[1] = 0x00;
+//	write_reg[2] = 0x50;
+//	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
+//	HAL_Delay(50);
+
+		txbuffer[0] = CHn;
+		txbuffer[1] = 0x7;
+		for (int i= 2; i<10; i++)
+		{
+			txbuffer[i] = 0x50;
+		}
+
+		HAL_SPI_Transmit(&hspi1, txbuffer, 10, ADC_TIMEOUT);
+		HAL_Delay(50);
+
+		write_reg[0] = 0x25;
+		write_reg[1] = 0x00;
+		HAL_SPI_Transmit(&hspi1,write_reg,2, ADC_TIMEOUT/100);
+		HAL_SPI_Receive(&hspi1,ADC_buf,1,ADC_TIMEOUT);
+		HAL_Delay(50);
+
+
+//Start Conversions
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&START, 1, ADC_TIMEOUT/100); // Start conversions
 	HAL_Delay(10);
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET); // CS High
 	HAL_Delay(100);
 
 
-	// Calculate first average after init for further conversions
-
 #if ADC_FILTER == MOVING_AVERAGE
-
+	// Calculate first average after init for further conversions
 	for (int i=0;i<M;i++)
 	{
 		Update_ADC_data();
@@ -117,8 +172,8 @@ void Update_ADC_data(void)
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_RESET); //CS
 
 	//Send a Conversion Read request and store data
-	HAL_SPI_TransmitReceive(&hspi1,(uint8_t *)&GET_DATA, ADC_buf,20,ADC_TIMEOUT);
-	//HAL_SPI_Receive(&hspi1, ADC_buf,19,ADC_TIMEOUT);
+	HAL_SPI_Transmit(&hspi1,(uint8_t *)&GET_DATA,1,ADC_TIMEOUT);
+	HAL_SPI_Receive(&hspi1, ADC_buf,19,ADC_TIMEOUT);
 
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET); //CS
 	//Check ADC channel input faults
