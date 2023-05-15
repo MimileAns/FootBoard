@@ -58,8 +58,8 @@ void ADC_init(void)
 
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&SDATAC, 1, ADC_TIMEOUT/100); //stop read data continuously
 	HAL_Delay(20);
-	HAL_SPI_Transmit(&hspi1,(uint8_t *)&STOP, 1, ADC_TIMEOUT/100);
-	HAL_Delay(20);
+//	HAL_SPI_Transmit(&hspi1,(uint8_t *)&STOP, 1, ADC_TIMEOUT/100);
+//	HAL_Delay(20);
 
  // Configure CR1
 	write_reg[0] = CR1;
@@ -78,7 +78,7 @@ void ADC_init(void)
 // Configure CR2
 	write_reg[0] = CR2;
 	write_reg[1] = 0x00;
-	write_reg[2] = 0x77;
+	write_reg[2] = 0x74;
 	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
 	HAL_Delay(50);
 
@@ -91,7 +91,7 @@ void ADC_init(void)
 //Configure CR3
 	write_reg[0] = CR3;
 	write_reg[1] = 0x00;
-	write_reg[2] = 0x4C;
+	write_reg[2] = 0xC0;
 	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
 	HAL_Delay(50);
 
@@ -113,7 +113,7 @@ void ADC_init(void)
 		txbuffer[1] = 0x7;
 		for (int i= 2; i<10; i++)
 		{
-			txbuffer[i] = 0x10;
+			txbuffer[i] = 0x50;
 		}
 
 		HAL_SPI_Transmit(&hspi1, txbuffer, 10, ADC_TIMEOUT);
@@ -124,6 +124,11 @@ void ADC_init(void)
 		HAL_SPI_Transmit(&hspi1,write_reg,2, ADC_TIMEOUT/100);
 		HAL_SPI_Receive(&hspi1,ADC_buf,7,ADC_TIMEOUT);
 		HAL_Delay(50);
+
+//Read a first conversion
+		//HAL_SPI_TransmitReceive(&hspi1,(uint8_t *)&GET_DATA,ADC_buf,19,ADC_TIMEOUT);
+		HAL_SPI_Transmit(&hspi1,(uint8_t *)&GET_DATA,1,ADC_TIMEOUT);
+		HAL_SPI_Receive(&hspi1, ADC_buf,19,ADC_TIMEOUT);
 
 
 //Start Conversions
