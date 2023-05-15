@@ -19,9 +19,8 @@ void timer_callback_routine(){
 	tick = TIM2->CNT;
 	HAL_GPIO_WritePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin, GPIO_PIN_SET);
 
-	//Update_ADC_data needs to be called first to update LoadCell values
-	//Update_ADC_data();
-	Update_LC_data();
+	Update_ADC_data();
+	//Update_LC_data();
 	//LC_data LC = Get_LC_data();
 
 #if WITH_IMU

@@ -45,9 +45,9 @@ static bool ADC_FAULT = false;
 
 void ADC_init(void)
 {
+	HAL_Delay(5000);
 	uint8_t write_reg[3] = {0};
 	uint8_t txbuffer[10] = {0};
-	HAL_Delay(10000);
 	// set CS high to avoid conflicts
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET);
 	// Set up read data by command
@@ -56,9 +56,9 @@ void ADC_init(void)
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&nRESET, 1, ADC_TIMEOUT/100); //reset device
 	HAL_Delay(1000); // Wait for device to stabalize
 
-	HAL_SPI_Transmit(&hspi1,(uint8_t *)&STOP, 1, ADC_TIMEOUT/100);
-	HAL_Delay(20);
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&SDATAC, 1, ADC_TIMEOUT/100); //stop read data continuously
+	HAL_Delay(20);
+	HAL_SPI_Transmit(&hspi1,(uint8_t *)&STOP, 1, ADC_TIMEOUT/100);
 	HAL_Delay(20);
 
  // Configure CR1
@@ -78,7 +78,7 @@ void ADC_init(void)
 // Configure CR2
 	write_reg[0] = CR2;
 	write_reg[1] = 0x00;
-	write_reg[2] = 0x74;
+	write_reg[2] = 0x77;
 	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
 	HAL_Delay(50);
 
@@ -113,16 +113,16 @@ void ADC_init(void)
 		txbuffer[1] = 0x7;
 		for (int i= 2; i<10; i++)
 		{
-			txbuffer[i] = 0x50;
+			txbuffer[i] = 0x10;
 		}
 
 		HAL_SPI_Transmit(&hspi1, txbuffer, 10, ADC_TIMEOUT);
 		HAL_Delay(50);
 
 		write_reg[0] = 0x25;
-		write_reg[1] = 0x00;
+		write_reg[1] = 0x07;
 		HAL_SPI_Transmit(&hspi1,write_reg,2, ADC_TIMEOUT/100);
-		HAL_SPI_Receive(&hspi1,ADC_buf,1,ADC_TIMEOUT);
+		HAL_SPI_Receive(&hspi1,ADC_buf,7,ADC_TIMEOUT);
 		HAL_Delay(50);
 
 
@@ -133,32 +133,6 @@ void ADC_init(void)
 	HAL_Delay(100);
 
 
-#if ADC_FILTER == MOVING_AVERAGE
-	// Calculate first average after init for further conversions
-	for (int i=0;i<M;i++)
-	{
-		Update_ADC_data();
-		SUM.Front1_RAW = SUM.Front1_RAW + (uint32_t)RAW_LoadCells.Front1_RAW;
-		SUM.Front2_RAW = SUM.Front2_RAW + (uint32_t)RAW_LoadCells.Front2_RAW;
-		SUM.Middle1_RAW = SUM.Middle1_RAW + (uint32_t)RAW_LoadCells.Middle1_RAW;
-		SUM.Middle2_RAW = SUM.Middle2_RAW + (uint32_t)(RAW_LoadCells.Middle2_RAW);
-		SUM.Middle3_RAW = SUM.Middle3_RAW + (uint32_t)(RAW_LoadCells.Middle3_RAW);
-		SUM.Middle4_RAW = SUM.Middle4_RAW + (uint32_t)(RAW_LoadCells.Middle4_RAW);
-		SUM.Back1_RAW = SUM.Back1_RAW + (uint32_t)(RAW_LoadCells.Back1_RAW);
-		SUM.Back2_RAW = SUM.Back2_RAW + (uint32_t)(RAW_LoadCells.Back2_RAW);
-	}
-
-	//First average
-	LoadCells.Front1 = (float)(SUM.Front1_RAW/M);
-	LoadCells.Front2 = (float)(SUM.Front2_RAW/M);
-	LoadCells.Middle1 = (float)(SUM.Middle1_RAW/M);
-	LoadCells.Middle2 = (float)(SUM.Middle2_RAW/M);
-	LoadCells.Middle3 = (float)(SUM.Middle3_RAW/M);
-	LoadCells.Middle4 = (float)(SUM.Middle4_RAW/M);
-	LoadCells.Back1 = (float)(SUM.Back1_RAW/M);
-	LoadCells.Back2 = (float)(SUM.Back2_RAW/M);
-
-#endif
 }
 
 
@@ -172,6 +146,7 @@ void Update_ADC_data(void)
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_RESET); //CS
 
 	//Send a Conversion Read request and store data
+	//HAL_SPI_TransmitReceive(&hspi1,(uint8_t *)&GET_DATA,ADC_buf,19,ADC_TIMEOUT);
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&GET_DATA,1,ADC_TIMEOUT);
 	HAL_SPI_Receive(&hspi1, ADC_buf,19,ADC_TIMEOUT);
 
@@ -204,21 +179,36 @@ void Update_ADC_data(void)
 
 void Update_LC_data(void)
 {
-
-	Update_ADC_data();
+	//Update_ADC_data();
 
 #if ADC_FILTER == MOVING_AVERAGE
 
-	LoadCells.Front1 = 	(((float)RAW_LoadCells.Front1_RAW)+LoadCells.Front1*M)/(M+1);
-	LoadCells.Front2 = (((float)RAW_LoadCells.Front2_RAW)+LoadCells.Front2*M)/(M+1);
-	LoadCells.Middle1 = (((float)RAW_LoadCells.Middle1_RAW)+LoadCells.Middle1*M)/(M+1);
-	LoadCells.Middle2 = (((float)RAW_LoadCells.Middle2_RAW)+LoadCells.Middle2*M)/(M+1);
-	LoadCells.Middle3 = (((float)RAW_LoadCells.Middle3_RAW)+LoadCells.Middle3*M)/(M+1);
-	LoadCells.Middle4 = (((float)RAW_LoadCells.Middle4_RAW)+LoadCells.Middle4*M)/(M+1);
-	LoadCells.Back1 = (((float)RAW_LoadCells.Back1_RAW)+LoadCells.Back1*M)/(M+1);
-	LoadCells.Back2 = (((float)RAW_LoadCells.Back2_RAW)+LoadCells.Back2*M)/(M+1);
+	for (int i=0;i<M;i++)
+	{
+		Update_ADC_data();
+		SUM.Front1_RAW = SUM.Front1_RAW + (uint32_t)RAW_LoadCells.Front1_RAW;
+		SUM.Front2_RAW = SUM.Front2_RAW + (uint32_t)RAW_LoadCells.Front2_RAW;
+		SUM.Middle1_RAW = SUM.Middle1_RAW + (uint32_t)RAW_LoadCells.Middle1_RAW;
+		SUM.Middle2_RAW = SUM.Middle2_RAW + (uint32_t)(RAW_LoadCells.Middle2_RAW);
+		SUM.Middle3_RAW = SUM.Middle3_RAW + (uint32_t)(RAW_LoadCells.Middle3_RAW);
+		SUM.Middle4_RAW = SUM.Middle4_RAW + (uint32_t)(RAW_LoadCells.Middle4_RAW);
+		SUM.Back1_RAW = SUM.Back1_RAW + (uint32_t)(RAW_LoadCells.Back1_RAW);
+		SUM.Back2_RAW = SUM.Back2_RAW + (uint32_t)(RAW_LoadCells.Back2_RAW);
+	}
+
+	LoadCells.Front1 = (float)(SUM.Front1_RAW/M);
+	LoadCells.Front2 = (float)(SUM.Front2_RAW/M);
+	LoadCells.Middle1 = (float)(SUM.Middle1_RAW/M);
+	LoadCells.Middle2 = (float)(SUM.Middle2_RAW/M);
+	LoadCells.Middle3 = (float)(SUM.Middle3_RAW/M);
+	LoadCells.Middle4 = (float)(SUM.Middle4_RAW/M);
+	LoadCells.Back1 = (float)(SUM.Back1_RAW/M);
+	LoadCells.Back2 = (float)(SUM.Back2_RAW/M);
+
 
 #elif ADC_FILTER == USE_LPF
+
+	Update_ADC_data();
 
 	//Calculate value from previous sample and conversion result
 	LoadCells.Front1 = (float)(alph * RAW_LoadCells.Front1_RAW) + bet * prev_LoadCells.Front1;
@@ -240,6 +230,8 @@ void Update_LC_data(void)
 	prev_LoadCells.Back2 = LoadCells.Back2;
 
 #elif ADC_FILTER == ADC_FILTER
+
+	Update_ADC_data();
 
 	LoadCells.Front1=  RAW_LoadCells.Front1_RAW;
 	LoadCells.Front2 =  RAW_LoadCells.Front2_RAW;
@@ -282,6 +274,6 @@ LC_data Get_LC_data(void)
 	Load.Back2 = Load.Back2 * FORCE_CST;
 #endif
 
-
 	return Load;
 }
+
