@@ -32,9 +32,9 @@ LC_data LoadCells;
 LC_data prev_LoadCells = {0};
 LC_data Load;
 LC_data_RAW32 SUM = {0};
-// Status checks
+// Status checks and help
 static bool ADC_FAULT = false;
-
+uint8_t counter;
 
 
 //@brief : Initializes the ADS130E8 in read data by command mode and starts the conversions
@@ -62,9 +62,15 @@ void ADC_init(void)
 //	HAL_Delay(20);
 
  // Configure CR1
+	write_reg[0] = CR1_read;
+	write_reg[1] = 0x00;
+	HAL_SPI_Transmit(&hspi1,write_reg, 2, ADC_TIMEOUT/100);
+	HAL_SPI_Receive(&hspi1, ADC_buf, 1,ADC_TIMEOUT);
+	HAL_Delay(50);
+
 	write_reg[0] = CR1;
 	write_reg[1] = 0x00;
-	write_reg[2] = 0x21;
+	write_reg[2] = 0x01;
 	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
 	HAL_Delay(50);
 
@@ -78,7 +84,7 @@ void ADC_init(void)
 // Configure CR2
 	write_reg[0] = CR2;
 	write_reg[1] = 0x00;
-	write_reg[2] = 0x74;
+	write_reg[2] = 0x60;
 	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
 	HAL_Delay(50);
 
@@ -91,7 +97,7 @@ void ADC_init(void)
 //Configure CR3
 	write_reg[0] = CR3;
 	write_reg[1] = 0x00;
-	write_reg[2] = 0xC0;
+	write_reg[2] = 0xCC;
 	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
 	HAL_Delay(50);
 
@@ -113,7 +119,7 @@ void ADC_init(void)
 		txbuffer[1] = 0x7;
 		for (int i= 2; i<10; i++)
 		{
-			txbuffer[i] = 0x50;
+			txbuffer[i] = 0x20;
 		}
 
 		HAL_SPI_Transmit(&hspi1, txbuffer, 10, ADC_TIMEOUT);
@@ -188,8 +194,7 @@ void Update_LC_data(void)
 
 #if ADC_FILTER == MOVING_AVERAGE
 
-	for (int i=0;i<M;i++)
-	{
+		counter++;
 		Update_ADC_data();
 		SUM.Front1_RAW = SUM.Front1_RAW + (uint32_t)RAW_LoadCells.Front1_RAW;
 		SUM.Front2_RAW = SUM.Front2_RAW + (uint32_t)RAW_LoadCells.Front2_RAW;
@@ -199,8 +204,9 @@ void Update_LC_data(void)
 		SUM.Middle4_RAW = SUM.Middle4_RAW + (uint32_t)(RAW_LoadCells.Middle4_RAW);
 		SUM.Back1_RAW = SUM.Back1_RAW + (uint32_t)(RAW_LoadCells.Back1_RAW);
 		SUM.Back2_RAW = SUM.Back2_RAW + (uint32_t)(RAW_LoadCells.Back2_RAW);
-	}
 
+	if(counter%M == 0)
+	{
 	LoadCells.Front1 = (float)(SUM.Front1_RAW/M);
 	LoadCells.Front2 = (float)(SUM.Front2_RAW/M);
 	LoadCells.Middle1 = (float)(SUM.Middle1_RAW/M);
@@ -209,7 +215,9 @@ void Update_LC_data(void)
 	LoadCells.Middle4 = (float)(SUM.Middle4_RAW/M);
 	LoadCells.Back1 = (float)(SUM.Back1_RAW/M);
 	LoadCells.Back2 = (float)(SUM.Back2_RAW/M);
-
+	counter=0;
+	memset(&SUM,0,sizeof(SUM));
+	}
 
 #elif ADC_FILTER == USE_LPF
 

@@ -1,4 +1,4 @@
 ../Core/Src/drivers/drv_ADS130.c:46:6:ADC_init	32	static
-../Core/Src/drivers/drv_ADS130.c:149:6:Update_ADC_data	8	static
-../Core/Src/drivers/drv_ADS130.c:185:6:Update_LC_data	8	static
-../Core/Src/drivers/drv_ADS130.c:258:9:Get_LC_data	24	static
+../Core/Src/drivers/drv_ADS130.c:155:6:Update_ADC_data	8	static
+../Core/Src/drivers/drv_ADS130.c:191:6:Update_LC_data	8	static
+../Core/Src/drivers/drv_ADS130.c:266:9:Get_LC_data	24	static

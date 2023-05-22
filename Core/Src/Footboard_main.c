@@ -12,6 +12,7 @@ float received_angle_203 = 0;
 uint32_t tick=0;
 uint32_t tick2 = 0;
 float time=0;
+LC_data LoadFeet;
 
 // callback @ 1kHz
 void timer_callback_routine(){
@@ -19,9 +20,9 @@ void timer_callback_routine(){
 	tick = TIM2->CNT;
 	HAL_GPIO_WritePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin, GPIO_PIN_SET);
 
-	Update_ADC_data();
-	//Update_LC_data();
-	//LC_data LC = Get_LC_data();
+	//Update_ADC_data();
+	Update_LC_data();
+	LoadFeet = Get_LC_data();
 
 #if WITH_IMU
 	// get IMU
