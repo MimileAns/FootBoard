@@ -16,7 +16,7 @@ void KalmanOrientationFilter_Init(KalmanHandle_Typedef* filter, float* initial_s
 
 }
 
-KalmanHandle_Typedef KalmanOrientationFilter_Update(KalmanHandle_Typedef* filter, float dt) {
+void KalmanOrientationFilter_Update(KalmanHandle_Typedef* filter, float dt) {
 
     // Predict the next state based on gyroscope measurements
     filter->roll += filter->gyro_x * dt;
@@ -47,8 +47,6 @@ KalmanHandle_Typedef KalmanOrientationFilter_Update(KalmanHandle_Typedef* filter
     filter->roll = filter->x[0];
     filter->pitch = filter->x[1];
     filter->yaw = filter->x[2];
-
-    return filter;
 }
 
 

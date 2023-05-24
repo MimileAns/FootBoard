@@ -5,5 +5,8 @@
         "drv_ads130.h": "c",
         "footboard_main.h": "c",
         "utils.h": "c"
-    }
+    },
+    "stm32-for-vscode.openOCDPath": false,
+    "stm32-for-vscode.makePath": false,
+    "stm32-for-vscode.armToolchainPath": false
 }

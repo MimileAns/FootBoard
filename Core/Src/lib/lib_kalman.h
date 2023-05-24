@@ -30,5 +30,5 @@ void KalmanOrientationFilter_Init(KalmanHandle_Typedef* filter,
 								  float* process_noise,
 								  float* measurement_noise);
 
-KalmanHandle_Typedef KalmanOrientationFilter_Update(KalmanHandle_Typedef* filter, float dt);
+void KalmanOrientationFilter_Update(KalmanHandle_Typedef* filter, float dt);
 #endif /* SRC_LIB_LIB_KALMAN_H_ */

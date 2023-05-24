@@ -190,7 +190,7 @@ void Update_ADC_data(void)
 
 void Update_LC_data(void)
 {
-	//Update_ADC_data();
+	Update_ADC_data();
 
 #if ADC_FILTER == MOVING_AVERAGE
 
