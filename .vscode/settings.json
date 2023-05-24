@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "drv_can_bus.h": "c",
+        "drv_icm-42670.h": "c",
+        "drv_ads130.h": "c",
+        "footboard_main.h": "c",
+        "utils.h": "c"
+    }
+}

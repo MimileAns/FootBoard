@@ -17,6 +17,17 @@ vectors prev_gyro_orient;
 const float alpha = 0.98;
 const float beta = 1 - alpha;
 
+#if ORIENTATION_FILTER == USE_FILTER_KALMAN
+
+//KalmanFilter Init vars (for Kalman filter initalization)
+float initial_state[3] = {0};
+float initial_covariance[9] = {0};
+float process_noise[9] = {0};
+float measurement_noise[9] = {0};
+
+KalmanHandle_Typedef OrientFilter;
+#endif
+
 // read only register address (x & 0x80) is to add read bit to MSB
 const uint8_t TEMP_DATA1 	= 0x09 | 0x80;		// TEMP_DATA[15:8]
 const uint8_t TEMP_DATA0	= 0x0A | 0x80;		// TEMP_DATA[7:0]
@@ -83,6 +94,15 @@ void init_IMU(){
 	prev_gyro_orient.y = 0.0;
 	prev_gyro_orient.z = 0.0;
 
+#if ORIENTATION_FILTER == USE_FILTER_KALMAN
+
+	void KalmanOrientationFilter_Init(OrientFilter,
+									  initial_state,
+									  initial_covariance,
+									  process_noise,
+									  measurement_noise);
+#endif
+
 }
 
 void update_IMU_data(){
@@ -138,6 +158,9 @@ void update_IMU_orient_data(){
 	prev_orientation.x = orientation.x;
 	prev_orientation.y = orientation.y;
 	prev_orientation.z = orientation.z;
+
+#elif ORIENTATION_FILTER == USE_FILTER_KALMAN
+
 
 
 #elif ORIENTATION_FILTER == ORIENTATION_FILTER

@@ -3,11 +3,12 @@
 
 #include "main.h"
 #include "lib/utils.h"
+#include "lib/lib_kalman.h"
 
 #define CALL_BACK_DT 0.001f // callback period in [s]
 
 // select what filter to use for IMU
-#define ORIENTATION_FILTER USE_FILTER_COMPLEMENTARY
+//#define ORIENTATION_FILTER USE_FILTER_COMPLEMENTARY
 //#define ORIENTATION_FILTER ORIENTATION_FILTER
 
 // select which filter to use for LC ADC

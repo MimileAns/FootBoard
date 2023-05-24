@@ -1,78 +1,55 @@
+#include <math.h>
 #include "lib_kalman.h"
 
-KalmanFilter FiltIMU;
 
-
-// Initialize the Kalman filter
-void KalmanFilter_Init(KalmanFilter* filter, float* initial_state, float* initial_covariance, float* process_noise, float* measurement_noise) {
-    for (int i = 0; i < 6; i++) {
+// Initialize the Kalman orientation filter by setting initial values
+void KalmanOrientationFilter_Init(KalmanHandle_Typedef* filter, float* initial_state, float* initial_covariance, float* process_noise, float* measurement_noise)
+{
+    for (int i = 0; i < 3; i++) {
         filter->x[i] = initial_state[i];
     }
-    for (int i = 0; i < 36; i++) {
+    for (int i = 0; i < 9; i++) {
         filter->P[i] = initial_covariance[i];
         filter->Q[i] = process_noise[i];
         filter->R[i] = measurement_noise[i];
     }
+
 }
 
-// Update the state and covariance predictions
-void KalmanFilter_Predict(KalmanFilter* filter) {
-    // Calculate the gyroscope delta
-    float gyro_delta_x = filter->gyro_x - filter->gyro_x_prev;
-    float gyro_delta_y = filter->gyro_y - filter->gyro_y_prev;
-    float gyro_delta_z = filter->gyro_z - filter->gyro_z_prev;
+KalmanHandle_Typedef KalmanOrientationFilter_Update(KalmanHandle_Typedef* filter, float dt) {
 
     // Predict the next state based on gyroscope measurements
-    filter->x[0] += gyro_delta_x;   // Modify this line for your prediction model
-    filter->x[1] += gyro_delta_y;   // Modify this line for your prediction model
-    filter->x[2] += gyro_delta_z;   // Modify this line for your prediction model
+    filter->roll += filter->gyro_x * dt;
+    filter->pitch += filter->gyro_y * dt;
+    filter->yaw += filter->gyro_z * dt;
 
     // Update the covariance based on process noise
-    for (int i = 0; i < 6; i++) {
-        for (int j = 0; j < 6; j++) {
-            if (i == j) {
-                filter->P[i * 6 + j] += filter->Q[i * 6 + j];
-            }
-        }
+    for (int i = 0; i < 9; i++) {
+        filter->P[i] += filter->R[i];
     }
 
-    // Save the current gyroscope measurements as previous measurements
-    filter->gyro_x_prev = filter->gyro_x;
-    filter->gyro_y_prev = filter->gyro_y;
-    filter->gyro_z_prev = filter->gyro_z;
-}
-
-// Update the state and covariance estimates with a new measurement
-void KalmanFilter_Update(KalmanFilter* filter) {
-    // Calculate the acceleration delta
-    float accel_delta_x = filter->accel_x - filter->accel_x_prev;
-    float accel_delta_y = filter->accel_y - filter->accel_y_prev;
-    float accel_delta_z = filter->accel_z - filter->accel_z_prev;
+    // Calculate the acceleration angles
+    float accel_roll = atan2(filter->accel_y, filter->accel_z);
+    float accel_pitch = atan2(-filter->accel_x, sqrt(filter->accel_y * filter->accel_y + filter->accel_z * filter->accel_z));
 
     // Update the state estimate based on acceleration measurements
-    filter->x[3] = filter->accel_x + accel_delta_x;   // Modify this line for your update model
-    filter->x[4] = filter->accel_y + accel_delta_y;   // Modify this line for your update model
-    filter->x[5] = filter->accel_z + accel_delta_z;   // Modify this line for your update model
-
-    // Calculate the Kalman gain for each measurement
-    for (int i = 0; i < 6; i++) {
-        filter->K[i] = filter->P[i * 6 + i] / (filter->P[i * 6 + i] + filter->R[i * 6 + i]);
-    }
-
-    // Update the state estimate based on acceleration measurements
-    for (int i = 0; i < 6; i++) {
-        filter->x[i] += filter->K[i] * (filter->x[i] - filter->x[i]);
+    for (int i = 0; i < 3; i++) {
+        filter->K[i] = filter->P[i] / (filter->P[i] + filter->Q[i]);
+        filter->x[i] += filter->K[i] * (accel_roll - filter->x[i]);
     }
 
     // Update the covariance estimate based on acceleration measurements
-    for (int i = 0; i < 6; i++) {
-        for (int j = 0; j < 6; j++) {
-            filter->P[i * 6 + j] *= (1.0 - filter->K[i] * filter->P[i * 6 + j]);
-        }
+    for (int i = 0; i < 9; i++) {
+        filter->P[i] *= (1.0 - filter->K[i]);
     }
 
-    // Save the current acceleration measurements as previous measurements
-    filter->accel_x_prev = filter->accel_x;
-    filter->accel_y_prev = filter->accel_y;
-    filter->accel_z_prev = filter->accel_z;
+    // Update the estimated orientation
+    filter->roll = filter->x[0];
+    filter->pitch = filter->x[1];
+    filter->yaw = filter->x[2];
+
+    return filter;
 }
+
+
+

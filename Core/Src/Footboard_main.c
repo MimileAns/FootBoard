@@ -9,12 +9,18 @@ float received_angle_202 = 0;
 float received_angle_203 = 0;
 #endif
 
+
+//---------------------------User Variables-------------------------------//
 uint32_t tick=0;
 uint32_t tick2 = 0;
 float time=0;
+
+//LoadCell structure
 LC_data LoadFeet;
 
-// callback @ 1kHz
+//-----------------------End of User Variables---------------------------//
+
+//--------------------------callback @ 1kHz------------------------------//
 void timer_callback_routine(){
 
 	tick = TIM2->CNT;
@@ -109,6 +115,8 @@ void timer_callback_routine(){
 	tick2=TIM2->CNT;
 	time = abs(tick2-tick)/80;
 }
+//----------------------------------------------------------------------------------------//
+
 
 void footboard_main(){
 	// Start CAN bus
