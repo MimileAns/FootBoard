@@ -10,7 +10,12 @@
       "gdbPath": "arm-none-eabi-gdb",
       "runToEntryPoint": "main",
       "showDevDebugOutput": "none",
-      "servertype": "stlink"
-    },
+      "servertype": "stlink",
+      "interface": "swd",
+      "liveWatch": {
+        "enabled": true,
+        "samplesPerSecond": 4
+      },
+    }
   ]
 }

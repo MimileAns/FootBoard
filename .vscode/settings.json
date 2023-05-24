@@ -8,5 +8,9 @@
     },
     "stm32-for-vscode.openOCDPath": false,
     "stm32-for-vscode.makePath": false,
-    "stm32-for-vscode.armToolchainPath": false
+    "stm32-for-vscode.armToolchainPath": false,
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "cortex-debug.variableUseNaturalFormat": true,
+    "cortex-debug.openocdPath": "",
+    "cmake.configureOnOpen": false
 }
