@@ -17,8 +17,8 @@
 
 
 
-#define USE_FILTER_COMPLEMENTARY 1
-#define USE_FILTER_KALMAN 0
+#define USE_FILTER_COMPLEMENTARY 0
+#define USE_FILTER_KALMAN 1
 
 #define TX_BOARD 1 // always set to 1 if we want the board to transmit on the CAN bus
 #define WITH_IMU 1 // set to 0 for board without IMU, set to 1 for board with IMU

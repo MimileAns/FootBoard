@@ -119,7 +119,7 @@ void ADC_init(void)
 		txbuffer[1] = 0x7;
 		for (int i= 2; i<10; i++)
 		{
-			txbuffer[i] = 0x20;
+			txbuffer[i] = 0x51;
 		}
 
 		HAL_SPI_Transmit(&hspi1, txbuffer, 10, ADC_TIMEOUT);
