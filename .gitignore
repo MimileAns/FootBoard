@@ -1,3 +1,8 @@
 **/Debug
 **/build
 **/.settings
+*.bin
+*.elf
+*.hex
+*.obj
+*.ninja
