@@ -4,6 +4,7 @@
 // IMU data
 vectors accel;
 vectors gyro;
+vectors accelarctan;
 // IMU orientation data
 vectors orientation;
 vectors prev_orientation;
@@ -16,6 +17,7 @@ vectors prev_gyro_orient;
 //complementary filter coefficient
 const float alpha = 0.98;
 const float beta = 1 - alpha;
+
 
 #if ORIENTATION_FILTER == USE_FILTER_KALMAN
 
@@ -116,6 +118,11 @@ void update_IMU_data(){
 	accel.x =  (float)(int16_t)(spi_buf[0] << 8 | spi_buf[1])  / FS11B; // FS11B used for 16g scale
 	accel.y =  (float)(int16_t)(spi_buf[2] << 8 | spi_buf[3])  / FS11B;
 	accel.z = -(float)(int16_t)(spi_buf[4] << 8 | spi_buf[5])  / FS11B;
+
+	accelarctan.x = accel.y/accel.z;
+	accelarctan.y = accel.x/accel.z;
+	accelarctan.z = accel.x/accel.y;
+
 	// parse data to gyroscope vector
 	gyro.x = -(float)(int16_t)(spi_buf[6]  << 8 | spi_buf[7])  / 16.4; // 16.4 used for 200dps scale
 	gyro.y = -(float)(int16_t)(spi_buf[8]  << 8 | spi_buf[9])  / 16.4;
