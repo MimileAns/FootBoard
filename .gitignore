@@ -6,3 +6,5 @@
 *.hex
 *.obj
 *.ninja
+*.c.obj
+*.c.obj.d
