@@ -5,7 +5,7 @@
 #include "../Footboard_main.h"
 
 #define ADC_TIMEOUT 1000
-#define NEWT 1
+#define NEWT 0
 
 // Raw load cells values
 typedef struct{

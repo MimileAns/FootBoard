@@ -58,8 +58,6 @@ void ADC_init(void)
 
 	HAL_SPI_Transmit(&hspi1,(uint8_t *)&SDATAC, 1, ADC_TIMEOUT/100); //stop read data continuously
 	HAL_Delay(20);
-//	HAL_SPI_Transmit(&hspi1,(uint8_t *)&STOP, 1, ADC_TIMEOUT/100);
-//	HAL_Delay(20);
 
  // Configure CR1
 	write_reg[0] = CR1_read;
@@ -109,12 +107,6 @@ void ADC_init(void)
 
 //Configure CHn
 
-//	write_reg[0] = CHn;
-//	write_reg[1] = 0x00;
-//	write_reg[2] = 0x50;
-//	HAL_SPI_Transmit(&hspi1,write_reg, 3, ADC_TIMEOUT/100);
-//	HAL_Delay(50);
-
 		txbuffer[0] = CHn;
 		txbuffer[1] = 0x7;
 		for (int i= 2; i<10; i++)
@@ -145,7 +137,6 @@ void ADC_init(void)
 
 
 }
-
 
 
 //@brief: Updates the RAW ADC data of the LoadCells (by sending a read data request)
