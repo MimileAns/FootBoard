@@ -3,7 +3,7 @@
   "configurations": [  
     {
       "cwd": "${workspaceFolder}",
-      "executable": "${command:cmake.launchTargetPath}",
+      "executable": "${workspaceFolder}/build/debug/build/Footboard_V7.elf",
       "name": "Debug with ST-Link",
       "request": "launch",
       "type": "cortex-debug",

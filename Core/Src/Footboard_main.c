@@ -11,9 +11,6 @@ float received_angle_203 = 0;
 
 
 //---------------------------User Variables-------------------------------//
-uint32_t tick=0;
-uint32_t tick2 = 0;
-float time=0;
 
 //LoadCell structure
 LC_data LoadFeet;
@@ -23,7 +20,6 @@ LC_data LoadFeet;
 //--------------------------callback @ 1kHz------------------------------//
 void timer_callback_routine(){
 
-	tick = TIM2->CNT;
 	HAL_GPIO_WritePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin, GPIO_PIN_SET);
 
 	//Update_ADC_data();
@@ -112,8 +108,7 @@ void timer_callback_routine(){
 
 #endif
 	HAL_GPIO_WritePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin, GPIO_PIN_RESET);
-	tick2=TIM2->CNT;
-	time = abs(tick2-tick)/80;
+
 }
 //----------------------------------------------------------------------------------------//
 

@@ -57,6 +57,7 @@ typedef struct{
 #define RES 16 			 // Number of bits resolution ADC
 
 void ADC_init(void);
+void Update_Offset_data(void);
 void Update_ADC_data(void);
 void Update_LC_data(void);
 LC_data Get_LC_data(void);

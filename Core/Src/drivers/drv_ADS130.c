@@ -1,6 +1,7 @@
 #include "drv_ADS130.h"
 #include <math.h>
 #include <stdbool.h>
+#include <string.h>
 
 // Filtering and conversion constants
 const float FS = 3.3; // Upper boundary voltage Half-Bridge
@@ -32,6 +33,7 @@ LC_data LoadCells;
 LC_data prev_LoadCells = {0};
 LC_data Load;
 LC_data_RAW32 SUM = {0};
+static LC_data_RAW16 Init_LC;
 // Status checks and help
 static bool ADC_FAULT = false;
 uint8_t counter;
@@ -109,9 +111,9 @@ void ADC_init(void)
 
 		txbuffer[0] = CHn;
 		txbuffer[1] = 0x7;
-		for (int i= 2; i<10; i++)
+		for (int i=2; i<10; i++)
 		{
-			txbuffer[i] = 0x50;
+			txbuffer[i] = 0x20;
 		}
 
 		HAL_SPI_Transmit(&hspi1, txbuffer, 10, ADC_TIMEOUT);
@@ -135,7 +137,37 @@ void ADC_init(void)
 	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET); // CS High
 	HAL_Delay(100);
 
+//Calulate first measure and substract to initial value 
+	Update_Offset_data();
 
+
+}
+
+void Update_Offset_data(void)
+{
+HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_RESET); //CS
+
+	//Send a Conversion Read request and store data
+	//HAL_SPI_TransmitReceive(&hspi1,(uint8_t *)&GET_DATA,ADC_buf,19,ADC_TIMEOUT);
+	HAL_SPI_Transmit(&hspi1,(uint8_t *)&GET_DATA,1,ADC_TIMEOUT);
+	HAL_SPI_Receive(&hspi1, ADC_buf,19,ADC_TIMEOUT);
+
+	HAL_GPIO_WritePin(ADC_nCS_GPIO_Port, ADC_nCS_Pin, GPIO_PIN_SET); //CS
+	//Check ADC channel input faults
+	if(ADC_buf[0] != 0xC0 || ADC_buf[1] != 0x00 || ADC_buf[2] != 0x00 )
+	{
+		ADC_FAULT = true;
+	}
+	//Update RAW variables
+	//Update init value to offset
+	Init_LC.Front1_RAW = (ADC_buf[3] << 8 | ADC_buf[4]);
+	Init_LC.Front2_RAW = (ADC_buf[5] << 8 | ADC_buf[6]);
+	Init_LC.Middle1_RAW = (ADC_buf[7] << 8 | ADC_buf[8]);
+	Init_LC.Middle2_RAW = (ADC_buf[9] << 8 | ADC_buf[10]);
+	Init_LC.Middle3_RAW = (ADC_buf[11] << 8 | ADC_buf[12]);
+	Init_LC.Middle4_RAW = (ADC_buf[13] << 8 | ADC_buf[14]);
+	Init_LC.Back1_RAW = (ADC_buf[15] << 8 | ADC_buf[16]);
+	Init_LC.Back2_RAW = (ADC_buf[17] << 8 | ADC_buf[18]);
 }
 
 
@@ -159,14 +191,14 @@ void Update_ADC_data(void)
 		ADC_FAULT = true;
 	}
 	//Update RAW variables
-	RAW_LoadCells.Front1_RAW = (ADC_buf[3] << 8 | ADC_buf[4]);
-	RAW_LoadCells.Front2_RAW = (ADC_buf[5] << 8 | ADC_buf[6]);
-	RAW_LoadCells.Middle1_RAW = (ADC_buf[7] << 8 | ADC_buf[8]);
-	RAW_LoadCells.Middle2_RAW = (ADC_buf[9] << 8 | ADC_buf[10]);
-	RAW_LoadCells.Middle3_RAW = (ADC_buf[11] << 8 | ADC_buf[12]);
-	RAW_LoadCells.Middle4_RAW = (ADC_buf[13] << 8 | ADC_buf[14]);
-	RAW_LoadCells.Back1_RAW = (ADC_buf[15] << 8 | ADC_buf[16]);
-	RAW_LoadCells.Back2_RAW = (ADC_buf[17] << 8 | ADC_buf[18]);
+	RAW_LoadCells.Front1_RAW = (ADC_buf[3] << 8 | ADC_buf[4]) - Init_LC.Front1_RAW;
+	RAW_LoadCells.Front2_RAW = (ADC_buf[5] << 8 | ADC_buf[6]) - Init_LC.Front2_RAW;
+	RAW_LoadCells.Middle1_RAW = (ADC_buf[7] << 8 | ADC_buf[8]) - Init_LC.Middle1_RAW;
+	RAW_LoadCells.Middle2_RAW = (ADC_buf[9] << 8 | ADC_buf[10]) - Init_LC.Middle2_RAW;
+	RAW_LoadCells.Middle3_RAW = (ADC_buf[11] << 8 | ADC_buf[12]) - Init_LC.Middle3_RAW;
+	RAW_LoadCells.Middle4_RAW = (ADC_buf[13] << 8 | ADC_buf[14]) - Init_LC.Middle4_RAW;
+	RAW_LoadCells.Back1_RAW = (ADC_buf[15] << 8 | ADC_buf[16]) - Init_LC.Back1_RAW;
+	RAW_LoadCells.Back2_RAW = (ADC_buf[17] << 8 | ADC_buf[18]) - Init_LC.Back2_RAW;
 
 
 	//memset(ADC_buf,0,sizeof(ADC_buf));
@@ -195,6 +227,7 @@ void Update_LC_data(void)
 		SUM.Middle4_RAW = SUM.Middle4_RAW + (uint32_t)(RAW_LoadCells.Middle4_RAW);
 		SUM.Back1_RAW = SUM.Back1_RAW + (uint32_t)(RAW_LoadCells.Back1_RAW);
 		SUM.Back2_RAW = SUM.Back2_RAW + (uint32_t)(RAW_LoadCells.Back2_RAW);
+
 
 	if(counter%M == 0)
 	{
